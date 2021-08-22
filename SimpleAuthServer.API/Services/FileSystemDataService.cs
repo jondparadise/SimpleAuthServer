@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SimpleAuthServer.API.Models;
+using SimpleAuthServer.API.Models.Configuration;
 using SimpleAuthServer.API.Services.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -11,19 +12,21 @@ namespace SimpleAuthServer.API.Services
 {
     public class FileSystemDataService : IUserStore
     {
-        const string TokenFileName = "tokens.json";
-        const string UserFileName = "users.json";
+        private readonly FileStorageConfiguration config;
 
-        public FileSystemDataService() { }
+        public FileSystemDataService(FileStorageConfiguration configuration) 
+        {
+            this.config = configuration;
+        }
 
         public List<RefreshToken> RetrieveRefreshTokens()
         {
-            return LoadObjectsFromFile<List<RefreshToken>>(TokenFileName);
+            return LoadObjectsFromFile<List<RefreshToken>>(config.RefreshTokensFilepath);
         }
 
         public List<AuthorizedUser> RetrieveUsers()
         {
-            return LoadObjectsFromFile<List<AuthorizedUser>>(UserFileName);
+            return LoadObjectsFromFile<List<AuthorizedUser>>(config.UsersFilepath);
         }
 
         private T LoadObjectsFromFile<T>(string filename)
@@ -59,12 +62,12 @@ namespace SimpleAuthServer.API.Services
 
         public void StoreRefreshTokens(IEnumerable<RefreshToken> tokens)
         {
-            this.SaveObjectToFile(tokens, TokenFileName);
+            this.SaveObjectToFile(tokens, config.RefreshTokensFilepath);
         }
 
         public void StoreUsers(IEnumerable<AuthorizedUser> users)
         {
-            this.SaveObjectToFile(users, UserFileName);
+            this.SaveObjectToFile(users, config.UsersFilepath);
         }
 
         private void SaveObjectToFile(object itemToSave, string fileName)

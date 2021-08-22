@@ -39,33 +39,19 @@ namespace SimpleAuthServer.API
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SimpleAuthServer.API", Version = "v1" });
             });
 
-            //CryptoService
+
+            //Load auth server configurations
             var cryptoConfiguration = new CryptoConfiguration();
             Configuration.Bind("CryptoConfiguration", cryptoConfiguration);
-            services.AddSingleton(cryptoConfiguration);
-            services.AddCryptoService();
-
-            //TokenService
+            var fileStorageConfiguration = new FileStorageConfiguration();
+            Configuration.Bind("FileStorageConfiguration", fileStorageConfiguration);
             var tokenConfiguration = new TokenConfiguration();
             Configuration.Bind("TokenConfiguration", tokenConfiguration);
-            services.AddTokenService(tokenConfiguration);
 
-            //DataRepository
-            services.AddDataRepository();
+
+            //Add auth server services
+            services.AddSimpleAuth(tokenConfiguration, fileStorageConfiguration, cryptoConfiguration);
             
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(token =>
-                {
-                    token.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenConfiguration.TokenSecret)),
-                        ValidIssuer = tokenConfiguration.Issuer,
-                        ValidAudience = tokenConfiguration.Audience,
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ClockSkew = TimeSpan.FromMinutes(1)
-                    };
-                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
